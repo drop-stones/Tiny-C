@@ -1,3 +1,3 @@
 
-add_library(lexer STATIC Lexer.cpp)
+add_tiny_c_library(lexer Lexer.cpp)
 target_link_libraries(lexer PRIVATE ${llvm_libs})
