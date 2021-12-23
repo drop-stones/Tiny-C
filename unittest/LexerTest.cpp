@@ -1,5 +1,5 @@
 
-#include "tiny-c/Lexer.h"
+#include "tiny-c/Lexer/Lexer.h"
 #include "gtest/gtest.h"
 
 namespace {

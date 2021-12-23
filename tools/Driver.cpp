@@ -1,4 +1,4 @@
-#include "tiny-c/Lexer.h"
+#include "tiny-c/Lexer/Lexer.h"
 
 int main() {
   return 0;
