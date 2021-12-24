@@ -45,3 +45,4 @@ add_subdirectory("unittest")
 
 enable_testing()
 add_test(NAME LexerTest COMMAND LexerTest)
+add_test(NAME ParserTest COMMAND ParserTest)

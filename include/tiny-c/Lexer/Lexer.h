@@ -35,7 +35,7 @@ public:
     return is(K1) || is(K2);
   }
   template <typename... Ts>
-  bool isOneOf(TokenKind K1, TokenKind K2, Ts... Ks) {
+  bool isOneOf(TokenKind K1, TokenKind K2, Ts... Ks) const {
     return is(K1) || isOneOf(K2, Ks...);
   }
 };
