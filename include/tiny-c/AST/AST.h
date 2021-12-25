@@ -9,8 +9,8 @@ class Expr;
 class Factor;
 class BinaryOp;
 class Stmt;
-class AssignmentStatement;
-class ReturnStatement;
+class AssignStmt;
+class RetStmt;
 
 using StmtList = std::vector<Stmt *>;
 
@@ -20,8 +20,8 @@ public:
   virtual void visit(Expr &){};
   virtual void visit(Factor &){};
   virtual void visit(BinaryOp &){};
-  virtual void visit(AssignmentStatement &){};
-  virtual void visit(ReturnStatement &){};
+  virtual void visit(AssignStmt &){};
+  virtual void visit(RetStmt &){};
 };
 
 class Procedure {
@@ -44,13 +44,18 @@ public:
   Expr() {}
 };
 
-// hold number (or identifier).
+// hold number or identifier.
 class Factor : public Expr {
+public:
+  enum ValueKind { Ident, Number };
+
 private:
+  ValueKind Kind;
   llvm::StringRef Val;
 
 public:
-  Factor(llvm::StringRef Val) : Val(Val) {}
+  Factor(ValueKind K, llvm::StringRef Val) : Kind(K), Val(Val) {}
+  ValueKind getKind() const { return Kind; }
   llvm::StringRef getVal() const { return Val; }
   virtual void accept(ASTVisitor &V) override {
     V.visit(*this);
@@ -93,12 +98,12 @@ public:
   StmtKind getKind() const { return Kind; }
 };
 
-class AssignmentStatement : public Stmt {
+class AssignStmt : public Stmt {
   Factor *Var;
   Expr *E;
 
 public:
-  AssignmentStatement(Factor *V, Expr *E) : Stmt(SK_Assign), Var(V), E(E) {}
+  AssignStmt(Factor *V, Expr *E) : Stmt(SK_Assign), Var(V), E(E) {}
   Factor *getVar() { return Var; }
   Expr *getExpr() { return E; }
   virtual void accept(ASTVisitor &V) override {
@@ -106,11 +111,11 @@ public:
   }
 };
 
-class ReturnStatement : public Stmt {
+class RetStmt : public Stmt {
   Expr *E;
 
 public:
-  ReturnStatement(Expr *E) : Stmt(SK_Return), E(E) {}
+  RetStmt(Expr *E) : Stmt(SK_Return), E(E) {}
   Expr *getExpr() { return E; }
   virtual void accept(ASTVisitor &V) override {
     V.visit(*this);

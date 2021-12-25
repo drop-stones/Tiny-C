@@ -33,6 +33,10 @@ private:
     return false;
   }
 
+  StmtList *parseStatementSequence();
+  Stmt *parseStatement();
+  Stmt *parseAssign();
+  Stmt *parseReturn();
   Expr *parseExpr();
   Expr *parseTerm();
   Expr *parseFactor();
@@ -43,7 +47,7 @@ public:
   }
 
   bool hasError() { return HasError; }
-  AST *parse();
+  StmtList *parse();
 };
 
 #endif
