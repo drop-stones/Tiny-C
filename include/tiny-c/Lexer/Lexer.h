@@ -13,13 +13,17 @@ public:
   enum TokenKind : unsigned short {
     eoi,
     unknown,
+    ident,
     number,
+    semicolon,
+    equal,
     plus,
     minus,
     star,
     slash,
     l_paren,
-    r_paren
+    r_paren,
+    KW_return
   };
 
 private:
