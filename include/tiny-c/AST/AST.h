@@ -8,6 +8,11 @@ class AST;
 class Expr;
 class Factor;
 class BinaryOp;
+class Stmt;
+class AssignmentStatement;
+class ReturnStatement;
+
+using StmtList = std::vector<Stmt *>;
 
 class ASTVisitor {
 public:
@@ -15,6 +20,17 @@ public:
   virtual void visit(Expr &){};
   virtual void visit(Factor &){};
   virtual void visit(BinaryOp &){};
+  virtual void visit(AssignmentStatement &){};
+  virtual void visit(ReturnStatement &){};
+};
+
+class Procedure {
+  StmtList Stmts;
+
+public:
+  Procedure() {}
+  StmtList &getStmts() { return Stmts; }
+  void setStmts(StmtList &L) { Stmts = L; }
 };
 
 class AST {
@@ -55,6 +71,47 @@ public:
   Expr *getLeft() { return Left; }
   Expr *getRight() { return Right; }
   Operator getOperator() { return Op; }
+  virtual void accept(ASTVisitor &V) override {
+    V.visit(*this);
+  }
+};
+
+class Stmt : public AST {
+public:
+  enum StmtKind {
+    SK_Assign,
+    SK_Return
+  };
+
+private:
+  const StmtKind Kind;
+
+protected:
+  Stmt(StmtKind K) : Kind(K) {}
+
+public:
+  StmtKind getKind() const { return Kind; }
+};
+
+class AssignmentStatement : public Stmt {
+  Factor *Var;
+  Expr *E;
+
+public:
+  AssignmentStatement(Factor *V, Expr *E) : Stmt(SK_Assign), Var(V), E(E) {}
+  Factor *getVar() { return Var; }
+  Expr *getExpr() { return E; }
+  virtual void accept(ASTVisitor &V) override {
+    V.visit(*this);
+  }
+};
+
+class ReturnStatement : public Stmt {
+  Expr *E;
+
+public:
+  ReturnStatement(Expr *E) : Stmt(SK_Return), E(E) {}
+  Expr *getExpr() { return E; }
   virtual void accept(ASTVisitor &V) override {
     V.visit(*this);
   }
