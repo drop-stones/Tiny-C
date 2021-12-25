@@ -21,7 +21,7 @@ public:
   }
 
   void run(AST *Tree) {
-    FunctionType *MainFty = FunctionType::get(Int32Ty, {VoidTy}, false);
+    FunctionType *MainFty = FunctionType::get(Int32Ty, {}, false);
     Function *MainFn = Function::Create(MainFty, GlobalValue::ExternalLinkage, "main", M);
     BasicBlock *BB = BasicBlock::Create(M->getContext(), "entry", MainFn);
 
