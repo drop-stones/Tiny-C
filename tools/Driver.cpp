@@ -8,5 +8,6 @@ int main() {
   Parser Parser(Lex);
   AST *Tree = Parser.parse();
   CodeGen CodeGenerator;
-  CodeGenerator.compile(Tree);
+  std::unique_ptr<llvm::Module> M = CodeGenerator.compile(Tree);
+  M->print(llvm::outs(), nullptr);
 }

@@ -58,10 +58,9 @@ public:
 
 } // namespace
 
-void CodeGen::compile(AST *Tree) {
-  LLVMContext Ctx;
-  Module *M = new Module("tiny-c.expr", Ctx);
-  ToIRVisitor ToIR(M);
+std::unique_ptr<llvm::Module> CodeGen::compile(AST *Tree) {
+  std::unique_ptr<llvm::Module> M = std::make_unique<llvm::Module>("tiny-c.expr", Ctx);
+  ToIRVisitor ToIR(M.get());
   ToIR.run(Tree);
-  M->print(outs(), nullptr);
+  return M;
 }

@@ -2,10 +2,14 @@
 #define TINY_C_CODE_GEN_H
 
 #include "tiny-c/AST/AST.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/LLVMContext.h"
 
 class CodeGen {
+  llvm::LLVMContext Ctx;
+
 public:
-  void compile(AST *Tree);
+  std::unique_ptr<llvm::Module> compile(AST *Tree);
 };
 
 #endif
