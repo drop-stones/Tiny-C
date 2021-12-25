@@ -8,6 +8,11 @@ class AST;
 class Expr;
 class Factor;
 class BinaryOp;
+class Stmt;
+class AssignStmt;
+class RetStmt;
+
+using StmtList = std::vector<Stmt *>;
 
 class ASTVisitor {
 public:
@@ -15,6 +20,17 @@ public:
   virtual void visit(Expr &){};
   virtual void visit(Factor &){};
   virtual void visit(BinaryOp &){};
+  virtual void visit(AssignStmt &){};
+  virtual void visit(RetStmt &){};
+};
+
+class Procedure {
+  StmtList Stmts;
+
+public:
+  Procedure() {}
+  StmtList &getStmts() { return Stmts; }
+  void setStmts(StmtList &L) { Stmts = L; }
 };
 
 class AST {
@@ -28,13 +44,18 @@ public:
   Expr() {}
 };
 
-// hold number (or identifier).
+// hold number or identifier.
 class Factor : public Expr {
+public:
+  enum ValueKind { Ident, Number };
+
 private:
+  ValueKind Kind;
   llvm::StringRef Val;
 
 public:
-  Factor(llvm::StringRef Val) : Val(Val) {}
+  Factor(ValueKind K, llvm::StringRef Val) : Kind(K), Val(Val) {}
+  ValueKind getKind() const { return Kind; }
   llvm::StringRef getVal() const { return Val; }
   virtual void accept(ASTVisitor &V) override {
     V.visit(*this);
@@ -55,6 +76,47 @@ public:
   Expr *getLeft() { return Left; }
   Expr *getRight() { return Right; }
   Operator getOperator() { return Op; }
+  virtual void accept(ASTVisitor &V) override {
+    V.visit(*this);
+  }
+};
+
+class Stmt : public AST {
+public:
+  enum StmtKind {
+    SK_Assign,
+    SK_Return
+  };
+
+private:
+  const StmtKind Kind;
+
+protected:
+  Stmt(StmtKind K) : Kind(K) {}
+
+public:
+  StmtKind getKind() const { return Kind; }
+};
+
+class AssignStmt : public Stmt {
+  Factor *Var;
+  Expr *E;
+
+public:
+  AssignStmt(Factor *V, Expr *E) : Stmt(SK_Assign), Var(V), E(E) {}
+  Factor *getVar() { return Var; }
+  Expr *getExpr() { return E; }
+  virtual void accept(ASTVisitor &V) override {
+    V.visit(*this);
+  }
+};
+
+class RetStmt : public Stmt {
+  Expr *E;
+
+public:
+  RetStmt(Expr *E) : Stmt(SK_Return), E(E) {}
+  Expr *getExpr() { return E; }
   virtual void accept(ASTVisitor &V) override {
     V.visit(*this);
   }
