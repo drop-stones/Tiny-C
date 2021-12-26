@@ -1,11 +1,20 @@
 # LLVM Frontend for Tiny-C
 
-## Grammer for local variables
+## Grammer for functions
 
 ```
-statementSequence : statement ( ";" statement )*;
-statement : assign | "return" ( expr )?;
-assign : ident ( "=" expr )?;
+compilationUnit : (functionDefinition)*;
+functionDefinition : type ident "(" (formalParameterList)? ")" block;
+formalParameterList : formalParameter ( "," formalParameter )*;
+formalParameter : type ident;
+
+type : "int";
+block : "{" ( (declaration | statement) ";" )* "}";
+declaration : type ident;
+statement : assignStmt | returnStmt;
+assignStmt : ident ( "=" expr )?;
+returnStmt : "return" ( expr )?;
+
 expr : term (( "+" | "-" ) term)*;
 term : factor (( "*" | "/" ) factor)*;
 factor : number | ident | "(" expr ")";
