@@ -9,7 +9,7 @@ class CodeGen {
   llvm::LLVMContext Ctx;
 
 public:
-  std::unique_ptr<llvm::Module> compile(AST *Tree);
+  std::unique_ptr<llvm::Module> compile(StmtList *Stmts);
 };
 
 #endif
