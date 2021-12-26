@@ -42,8 +42,8 @@ int main(int argc, const char **argv) {
 
   Lexer Lex(Source);
   Parser Parser(Lex);
-  AST *Tree = Parser.parse();
+  StmtList *Stmts = Parser.parse();
   CodeGen CodeGenerator;
-  std::unique_ptr<llvm::Module> M = CodeGenerator.compile(Tree);
+  std::unique_ptr<llvm::Module> M = CodeGenerator.compile(Stmts);
   emit(argv[0], M.get(), InputFile);
 }

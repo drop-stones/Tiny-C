@@ -26,11 +26,13 @@ void Lexer::next(Token &Result) {
     return;
   }
   if (charinfo::isLetter(*BufferPtr)) {
-    assert(false);
-    //const char *end = BufferPtr + 1;
-    //while (charinfo::isLetter(*end))
-    //  end++;
-    //llvm::StringRef Name(BufferPtr, end - BufferPtr);
+    const char *end = BufferPtr + 1;
+    while (charinfo::isLetter(*end))
+      end++;
+    llvm::StringRef Name(BufferPtr, end - BufferPtr);
+    Token::TokenKind Kind = Name == "return" ? Token::KW_return : Token::ident;
+    formToken(Result, end, Kind);
+    return;
   } else if (charinfo::isDigit(*BufferPtr)) {
     const char *end = BufferPtr + 1;
     while (charinfo::isDigit(*end))
@@ -41,6 +43,8 @@ void Lexer::next(Token &Result) {
     switch (*BufferPtr) {
 #define CASE(ch, tok) \
 case ch: formToken(Result, BufferPtr + 1, tok); break
+CASE(';', Token::semicolon);
+CASE('=', Token::equal);
 CASE('+', Token::plus);
 CASE('-', Token::minus);
 CASE('*', Token::star);

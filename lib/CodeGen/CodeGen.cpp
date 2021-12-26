@@ -13,29 +13,45 @@ class ToIRVisitor : public ASTVisitor {
   Type *VoidTy;
   Type *Int32Ty;
   Value *V;
+  llvm::DenseMap<llvm::StringRef, llvm::Value *> Allocs;
+  bool isRValue;
 
 public:
-  ToIRVisitor(Module *M) : M(M), Builder(M->getContext()) {
+  ToIRVisitor(Module *M) : M(M), Builder(M->getContext()), isRValue(false) {
     VoidTy = Type::getVoidTy(M->getContext());
     Int32Ty = Type::getInt32Ty(M->getContext());
   }
 
-  void run(AST *Tree) {
+  void run(StmtList *Stmts) {
     FunctionType *MainFty = FunctionType::get(Int32Ty, {}, false);
     Function *MainFn = Function::Create(MainFty, GlobalValue::ExternalLinkage, "main", M);
     BasicBlock *BB = BasicBlock::Create(M->getContext(), "entry", MainFn);
 
     Builder.SetInsertPoint(BB);
 
-    Tree->accept(*this);
-
-    Builder.CreateRet(V);
+    //Tree->accept(*this);
+    for (Stmt *stmt : *Stmts) {
+      stmt->accept(*this);
+    }
   }
 
   virtual void visit(Factor &Node) override {
-    int intval;
-    Node.getVal().getAsInteger(10, intval);
-    V = ConstantInt::get(Int32Ty, intval, true);
+    if (Node.getKind() == Factor::Ident) {
+      if (Allocs[Node.getVal()] == nullptr) {
+        llvm::Value *Val = Builder.CreateAlloca(Int32Ty);
+        Allocs[Node.getVal()] = Val;
+        V = Val;
+      } else {
+        V = Allocs[Node.getVal()];
+      }
+      if (isRValue) {
+        V = Builder.CreateLoad(Int32Ty, V);
+      }
+    } else if (Node.getKind() == Factor::Number) {
+      int intval;
+      Node.getVal().getAsInteger(10, intval);
+      V = ConstantInt::get(Int32Ty, intval, true);
+    }
   }
 
   virtual void visit(BinaryOp &Node) override {
@@ -54,13 +70,31 @@ public:
       V = Builder.CreateSDiv(Left, Right);   break;
     }
   }
+
+  virtual void visit(RetStmt &Node) override {
+    isRValue = true;
+    Node.getExpr()->accept(*this);
+    Value *Expr = V;
+    isRValue = false;
+    Builder.CreateRet(V);
+  }
+
+  virtual void visit(AssignStmt &Node) override {
+    Node.getVar()->accept(*this);
+    Value *Var = V;
+    isRValue = true;
+    Node.getExpr()->accept(*this);
+    Value *Expr = V;
+    isRValue = false;
+    V = Builder.CreateStore(Expr, Var);
+  }
 };
 
 } // namespace
 
-std::unique_ptr<llvm::Module> CodeGen::compile(AST *Tree) {
+std::unique_ptr<llvm::Module> CodeGen::compile(StmtList *Stmts) {
   std::unique_ptr<llvm::Module> M = std::make_unique<llvm::Module>("tiny-c.expr", Ctx);
   ToIRVisitor ToIR(M.get());
-  ToIR.run(Tree);
+  ToIR.run(Stmts);
   return M;
 }
