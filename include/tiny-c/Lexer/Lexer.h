@@ -1,63 +1,63 @@
 #ifndef TINY_C_LEXER_H
 #define TINY_C_LEXER_H
 
+#include "tiny-c/Basic/LLVM.h"
+#include "tiny-c/Lexer/Token.h"
+#include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/MemoryBuffer.h"
 
-class Lexer;
+using TokenList = std::vector<Token>;
 
-class Token {
-  friend class Lexer;
+class KeywordFilter {
+  llvm::StringMap<tok::TokenKind> KeywordToKind;
 
-public:
-  enum TokenKind : unsigned short {
-    eoi,
-    unknown,
-    ident,
-    number,
-    semicolon,
-    equal,
-    plus,
-    minus,
-    star,
-    slash,
-    l_paren,
-    r_paren,
-    KW_return
-  };
-
-private:
-  TokenKind Kind;
-  llvm::StringRef Text;
+  void addKeyword(StringRef Keyword, tok::TokenKind TokenCode);
 
 public:
-  TokenKind getKind() const { return Kind; }
-  llvm::StringRef getText() const { return Text; }
+  void addKeywords();
 
-  bool is(TokenKind K) const { return Kind == K; }
-  bool isOneOf(TokenKind K1, TokenKind K2) const {
-    return is(K1) || is(K2);
-  }
-  template <typename... Ts>
-  bool isOneOf(TokenKind K1, TokenKind K2, Ts... Ks) const {
-    return is(K1) || isOneOf(K2, Ks...);
+  tok::TokenKind
+  getFilteredKind(StringRef Name, tok::TokenKind DefaultTokenKind = tok::unknown) {
+    auto Result = KeywordToKind.find(Name);
+    if (Result != KeywordToKind.end())
+      return Result->second;
+    return DefaultTokenKind;
   }
 };
 
 class Lexer {
   const char *BufferStart;
-  const char *BufferPtr;
+  const char *CurPtr;
+
+  /// All Token list
+  TokenList Tokens;
+
+  /// Current index of TokenList.
+  int Nth;
+
+  KeywordFilter Keywords;
 
 public:
   Lexer(const llvm::StringRef &Buffer) {
     BufferStart = Buffer.begin();
-    BufferPtr = BufferStart;
+    CurPtr = BufferStart;
+    Nth = -1;
+    Keywords.addKeywords();
   }
 
-  void next(Token &Result);
+  /// Fill TokenList by all tokens in Buffer.
+  void run();
+
+  /// Go to next and returns the token.
+  Token &next();
+
+  /// Returns the n-th token after the current token.
+  Token &peek(int n);
 
 private:
-  void formToken(Token &Result, const char *TokEnd, Token::TokenKind Kind);
+  void nextToken(Token &Result);
+  void formToken(Token &Result, const char *TokEnd, tok::TokenKind Kind);
 };
 
 #endif

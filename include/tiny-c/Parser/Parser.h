@@ -16,9 +16,9 @@ private:
     HasError = true;
   }
 
-  void advance() { Lex.next(Tok); }
+  void advance() { Tok = Lex.next(); }
 
-  bool expect(Token::TokenKind Kind) {
+  bool expect(tok::TokenKind Kind) {
     if (Tok.getKind() != Kind) {
       error();
       return true;
@@ -26,7 +26,7 @@ private:
     return false;
   }
 
-  bool consume(Token::TokenKind Kind) {
+  bool consume(tok::TokenKind Kind) {
     if (expect(Kind))
       return true;
     advance();
