@@ -4,6 +4,7 @@
 #include "tiny-c/AST/AST.h"
 #include "tiny-c/Lexer/Lexer.h"
 #include "llvm/Support/raw_ostream.h"
+#include <unordered_map>
 
 class Parser {
 private:
@@ -11,43 +12,59 @@ private:
   Token Tok;
   bool HasError;
 
+  TypeDecl *IntegerType;
+
+  std::unordered_map<Decl *, llvm::StringMap<VarDecl *>> DeclMap;
+  Decl *CurScope;
+
+  void setVarDecl(VarDecl *D) {
+    DeclMap[CurScope][D->getName()] = D;
+  }
+
+  VarDecl *getVarDecl(llvm::StringRef Name) {
+    return DeclMap[CurScope][Name];
+  }
+
   void error() {
     llvm::errs() << "Unexpected: " << Tok.getText() << "\n";
     HasError = true;
   }
 
-  void advance() { Lex.next(Tok); }
+  void advance() { Tok = Lex.next(); }
 
-  bool expect(Token::TokenKind Kind) {
-    if (Tok.getKind() != Kind) {
+  /// Return false if the token is expected.
+  bool expect(tok::TokenKind ExpectedKind) {
+    if (Tok.getKind() != ExpectedKind) {
       error();
       return true;
     }
     return false;
   }
 
-  bool consume(Token::TokenKind Kind) {
-    if (expect(Kind))
+  bool consume(tok::TokenKind ExpectedKind) {
+    if (expect(ExpectedKind))
       return true;
     advance();
     return false;
   }
 
-  StmtList *parseStatementSequence();
-  Stmt *parseStatement();
-  Stmt *parseAssign();
-  Stmt *parseReturn();
-  Expr *parseExpr();
-  Expr *parseTerm();
-  Expr *parseFactor();
+  void parseTranslationUnit(TranslationUnitDecl *&T);
+  void parseFunc(FuncList &Funcs);
+  void parseParmVar(DeclList &Parms);
+  void parseStmt(StmtList &Stmts, DeclList &Decls);
+  void parseExpr(Expr *&E);
+  void parseTerm(Expr *&E);
+  void parseFactor(Expr *&E);
 
 public:
   Parser(Lexer &Lex) : Lex(Lex), HasError(false) {
     advance();
+
+    IntegerType = new TypeDecl(SMLoc(), "int");
   }
 
   bool hasError() { return HasError; }
-  StmtList *parse();
+  TranslationUnitDecl *parse();
 };
 
 #endif

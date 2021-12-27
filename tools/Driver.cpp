@@ -12,8 +12,8 @@ static llvm::cl::opt<std::string> InputFile(
 
 bool emit(llvm::StringRef argv0, llvm::Module *M, llvm::StringRef InputFilename) {
   std::string OutputFilename;
-  if (InputFilename.endswith(".txt")) {
-    OutputFilename = InputFilename.drop_back(4).str();
+  if (InputFilename.endswith(".c")) {
+    OutputFilename = InputFilename.drop_back(2).str();
     OutputFilename.append(".ll");
   }
 
@@ -41,9 +41,12 @@ int main(int argc, const char **argv) {
   llvm::StringRef Source = FileOrErr.get()->getBuffer();
 
   Lexer Lex(Source);
+  Lex.run();
   Parser Parser(Lex);
-  StmtList *Stmts = Parser.parse();
-  CodeGen CodeGenerator;
-  std::unique_ptr<llvm::Module> M = CodeGenerator.compile(Stmts);
+  TranslationUnitDecl *TransUnit = Parser.parse();
+
+  llvm::LLVMContext Ctx;
+  CodeGen CodeGenerator(Ctx);
+  std::unique_ptr<llvm::Module> M = CodeGenerator.compile(TransUnit, InputFile);
   emit(argv[0], M.get(), InputFile);
 }
