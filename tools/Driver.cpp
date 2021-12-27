@@ -43,10 +43,16 @@ int main(int argc, const char **argv) {
   Lexer Lex(Source);
   Lex.run();
   Parser Parser(Lex);
+<<<<<<< HEAD
   TranslationUnitDecl *TransUnit = Parser.parse();
 
   llvm::LLVMContext Ctx;
   CodeGen CodeGenerator(Ctx);
   std::unique_ptr<llvm::Module> M = CodeGenerator.compile(TransUnit, InputFile);
+=======
+  StmtList *Stmts = Parser.parse();
+  CodeGen CodeGenerator;
+  std::unique_ptr<llvm::Module> M = CodeGenerator.compile(Stmts);
+>>>>>>> develop
   emit(argv[0], M.get(), InputFile);
 }
