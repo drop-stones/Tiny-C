@@ -4,6 +4,7 @@
 #include "tiny-c/AST/AST.h"
 #include "tiny-c/Lexer/Lexer.h"
 #include "llvm/Support/raw_ostream.h"
+#include <unordered_map>
 
 class Parser {
 private:
@@ -12,6 +13,17 @@ private:
   bool HasError;
 
   TypeDecl *IntegerType;
+
+  std::unordered_map<Decl *, llvm::StringMap<VarDecl *>> DeclMap;
+  Decl *CurScope;
+
+  void setVarDecl(VarDecl *D) {
+    DeclMap[CurScope][D->getName()] = D;
+  }
+
+  VarDecl *getVarDecl(llvm::StringRef Name) {
+    return DeclMap[CurScope][Name];
+  }
 
   void error() {
     llvm::errs() << "Unexpected: " << Tok.getText() << "\n";
@@ -43,14 +55,6 @@ private:
   void parseExpr(Expr *&E);
   void parseTerm(Expr *&E);
   void parseFactor(Expr *&E);
-
-  //StmtList *parseStatementSequence();
-  //Stmt *parseStatement();
-  //Stmt *parseAssign();
-  //Stmt *parseReturn();
-  //Expr *parseExpr();
-  //Expr *parseTerm();
-  //Expr *parseFactor();
 
 public:
   Parser(Lexer &Lex) : Lex(Lex), HasError(false) {

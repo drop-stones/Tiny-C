@@ -17,27 +17,32 @@ void Parser::parseTranslationUnit(TranslationUnitDecl *&T) {
 }
 
 void Parser::parseFunc(FuncList &Funcs) {
+  ParmVarList Parms;
+  StmtList Stmts;
+  DeclList Decls;
   SMLoc Loc = Tok.getLocation();
   consume(tok::kw_INTEGER);
   StringRef FuncName = Tok.getText();
   consume(tok::ident);
+
+  FuncDecl *Func = new FuncDecl(Loc, FuncName, IntegerType, Parms, Stmts, Decls);
+  CurScope = Func;
+
   consume(tok::l_paren);
-
-  // TODO: ParmVarList
-  ParmVarList Parms;
-
+  // TODO: Parms
   consume(tok::r_paren);
   consume(tok::l_curl);
 
-  StmtList Stmts;
-  DeclList Decls;
   while (Tok.isNot(tok::r_curl)) {
     parseStmt(Stmts, Decls);
     consume(tok::semi);
   }
   consume(tok::r_curl);
 
-  FuncDecl *Func = new FuncDecl(Loc, FuncName, IntegerType, Parms, Stmts, Decls);
+  Func->setParms(Parms);
+  Func->setStmts(Stmts);
+  Func->setDecls(Decls);
+
   Funcs.push_back(Func);
 }
 
@@ -50,9 +55,17 @@ void Parser::parseStmt(StmtList &Stmts, DeclList &Decls) {
     DeclStmt *Decl = new DeclStmt(Var);
     Stmts.push_back(Decl);
     Decls.push_back(Var);
+    setVarDecl(Var);
     return;
   } else if (Tok.is(tok::ident) && Lex.peek(1).is(tok::equal)) {  // AssignStmt
-    // TODO
+    VarDecl *Var = getVarDecl(Tok.getText());
+    consume(tok::ident);
+    consume(tok::equal);
+    Expr *E = nullptr;
+    parseExpr(E);
+    AssignStmt *Assign = new AssignStmt(Var, E);
+    Stmts.push_back(Assign);
+    return;
   } else if (Tok.is(tok::kw_RETURN)) {  // ReturnStmt
     Expr *E;
     SMLoc Loc = Tok.getLocation();
@@ -101,10 +114,12 @@ void Parser::parseFactor(Expr *&E) {
   SMLoc Loc = Tok.getLocation();
 
   switch (Tok.getKind()) {
-  case tok::ident:
-    //consume(tok::ident);
-    //E = new DeclRef();
+  case tok::ident: {
+    VarDecl *Var = getVarDecl(Tok.getText());
+    consume(tok::ident);
+    E = new DeclRef(Var);
     return;
+  }
   case tok::integer_literal: {
     llvm::APSInt Val{Tok.getText()};
     consume(tok::integer_literal);
