@@ -8,7 +8,6 @@ TranslationUnitDecl *Parser::parse() {
 }
 
 void Parser::parseTranslationUnit(TranslationUnitDecl *&T) {
-  llvm::outs() << "parseTranslationUnit\n";
   FuncList Funcs;
   while (Tok.isNot(tok::eof)) {
     parseFunc(Funcs);

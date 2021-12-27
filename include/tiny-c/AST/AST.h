@@ -142,6 +142,10 @@ public:
   DeclStmt(VarDecl *Var) : Stmt(SK_Decl), Var(Var) {}
 
   VarDecl *getVar() { return Var; }
+
+  static bool classof(const Stmt *S) {
+    return S->getKind() == SK_Decl;
+  }
 };
 
 class AssignStmt : public Stmt {
@@ -153,6 +157,10 @@ public:
 
   VarDecl *getVar() { return Var; }
   Expr *getExpr() { return E; }
+
+  static bool classof(const Stmt *S) {
+    return S->getKind() == SK_Assign;
+  }
 };
 
 class ReturnStmt : public Stmt {
@@ -162,6 +170,10 @@ public:
   ReturnStmt(Expr *RetVal) : Stmt(SK_Return), RetVal(RetVal) {}
 
   Expr *getRetVal() { return RetVal; }
+
+  static bool classof(const Stmt *S) {
+    return S->getKind() == SK_Return;
+  }
 };
 
 class Operator {
@@ -208,6 +220,10 @@ public:
   Expr *getLeft() { return Left; }
   Expr *getRight() { return Right; }
   const Operator &getOperator() { return Op; }
+
+  static bool classof(const Expr *E) {
+    return E->getKind() == EK_BinaryOp;
+  }
 };
 
 class IntegerLiteral : public Expr {
@@ -219,6 +235,10 @@ public:
     : Expr(EK_Int, Ty), Loc(Loc), Val(Val) {}
   
   llvm::APSInt &getVal() { return Val; }
+
+  static bool classof(const Expr *E) {
+    return E->getKind() == EK_Int;
+  }
 };
 
 class DeclRef : public Expr {
@@ -228,6 +248,10 @@ public:
   DeclRef(VarDecl *Var) : Expr(EK_DeclRef, Var->getTy()), Var(Var) {}
 
   Decl *getDecl() { return Var; }
+
+  static bool classof(const Expr *E) {
+    return E->getKind() == EK_DeclRef;
+  }
 };
 
 /*

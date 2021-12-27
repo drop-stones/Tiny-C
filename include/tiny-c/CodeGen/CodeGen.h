@@ -4,12 +4,42 @@
 #include "tiny-c/AST/AST.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/IRBuilder.h"
+#include <unordered_map>
 
 class CodeGen {
-  llvm::LLVMContext Ctx;
+  llvm::Module *Mod;
+  llvm::LLVMContext &Ctx;
+  llvm::IRBuilder<> Builder;
+  llvm::Value *V;
+
+  std::unordered_map<llvm::Function *, llvm::StringMap<llvm::Value *>> AllocaMap;
+  llvm::Function *CurScope;
+
+  llvm::Type *VoidTy;
+  llvm::Type *Int32Ty;
+
+  llvm::Value *getAlloca(llvm::StringRef Name) {
+    return AllocaMap[CurScope][Name];
+  }
+  void setAlloca(llvm::StringRef Name, llvm::Value *Alloca) {
+    AllocaMap[CurScope][Name] = Alloca;
+  }
+  llvm::Type *getLLVMType(TypeDecl *Ty);
+
+  void compileTranslationUnit(TranslationUnitDecl *TransUnit);
+  void compileFunc(FuncDecl *Func);
+  void compileVarDecl(VarDecl *Var);
+  void compileStmt(Stmt *Stmt);
+  void compileExpr(Expr *Expr);
 
 public:
-  std::unique_ptr<llvm::Module> compile(StmtList *Stmts);
+  CodeGen(llvm::LLVMContext &Ctx) : Ctx(Ctx), Builder(Ctx) {
+    VoidTy = llvm::Type::getVoidTy(Ctx);
+    Int32Ty = llvm::Type::getInt32Ty(Ctx);
+  }
+
+  std::unique_ptr<llvm::Module> compile(TranslationUnitDecl *TransUnit, std::string FileName);
 };
 
 #endif
