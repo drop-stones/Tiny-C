@@ -38,9 +38,11 @@ private:
 
   void parseTranslationUnit(TranslationUnitDecl *&T);
   void parseFunc(FuncList &Funcs);
-  void parseParmVar(ParmVarList &Parms);
-  void parseStmt(StmtList &Stmts);
+  void parseParmVar(DeclList &Parms);
+  void parseStmt(StmtList &Stmts, DeclList &Decls);
   void parseExpr(Expr *&E);
+  void parseTerm(Expr *&E);
+  void parseFactor(Expr *&E);
 
   //StmtList *parseStatementSequence();
   //Stmt *parseStatement();

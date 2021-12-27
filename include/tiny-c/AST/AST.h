@@ -80,10 +80,11 @@ class FuncDecl : public Decl {
   TypeDecl *RetTy;
   ParmVarList Parms;
   StmtList Stmts;
+  DeclList Decls;
 
 public:
-  FuncDecl(SMLoc Loc, StringRef Name, TypeDecl *RetTy, ParmVarList &Parms, StmtList &Stmts)
-    : Decl(DK_Func, Loc, Name), RetTy(RetTy), Parms(Parms), Stmts(Stmts) {}
+  FuncDecl(SMLoc Loc, StringRef Name, TypeDecl *RetTy, ParmVarList &Parms, StmtList &Stmts, DeclList &Decls)
+    : Decl(DK_Func, Loc, Name), RetTy(RetTy), Parms(Parms), Stmts(Stmts), Decls(Decls) {}
 
   TypeDecl *getRetTy() { return RetTy; }
   void setRetTy(TypeDecl *T) { RetTy = T; }
@@ -91,6 +92,8 @@ public:
   void setParms(ParmVarList &P) { Parms = P; }
   StmtList &getStmts() { return Stmts; }
   void setStmts(StmtList &S) { Stmts = S; }
+  DeclList &getDecls() { return Decls; }
+  void setDecls(DeclList &D) { Decls = D; }
 };
 
 class VarDecl : public Decl {
