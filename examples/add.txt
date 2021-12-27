@@ -1,3 +1,0 @@
-num = 100;
-num = 200;
-return num + 300;

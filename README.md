@@ -3,15 +3,15 @@
 ## Grammer for functions
 
 ```
-compilationUnit : (functionDefinition)*;
+translationUnit : (functionDefinition)*;
 functionDefinition : type ident "(" (formalParameterList)? ")" block;
 formalParameterList : formalParameter ( "," formalParameter )*;
 formalParameter : type ident;
 
 type : "int";
-block : "{" ( (declaration | statement) ";" )* "}";
+block : "{" ( statement ";" )* "}";
+statement : declStmt | assignStmt | returnStmt;
 declaration : type ident;
-statement : assignStmt | returnStmt;
 assignStmt : ident ( "=" expr )?;
 returnStmt : "return" ( expr )?;
 

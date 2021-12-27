@@ -11,6 +11,8 @@ private:
   Token Tok;
   bool HasError;
 
+  TypeDecl *IntegerType;
+
   void error() {
     llvm::errs() << "Unexpected: " << Tok.getText() << "\n";
     HasError = true;
@@ -18,36 +20,45 @@ private:
 
   void advance() { Tok = Lex.next(); }
 
-  bool expect(tok::TokenKind Kind) {
-    if (Tok.getKind() != Kind) {
+  /// Return false if the token is expected.
+  bool expect(tok::TokenKind ExpectedKind) {
+    if (Tok.getKind() != ExpectedKind) {
       error();
       return true;
     }
     return false;
   }
 
-  bool consume(tok::TokenKind Kind) {
-    if (expect(Kind))
+  bool consume(tok::TokenKind ExpectedKind) {
+    if (expect(ExpectedKind))
       return true;
     advance();
     return false;
   }
 
-  StmtList *parseStatementSequence();
-  Stmt *parseStatement();
-  Stmt *parseAssign();
-  Stmt *parseReturn();
-  Expr *parseExpr();
-  Expr *parseTerm();
-  Expr *parseFactor();
+  void parseTranslationUnit(TranslationUnitDecl *&T);
+  void parseFunc(FuncList &Funcs);
+  void parseParmVar(ParmVarList &Parms);
+  void parseStmt(StmtList &Stmts);
+  void parseExpr(Expr *&E);
+
+  //StmtList *parseStatementSequence();
+  //Stmt *parseStatement();
+  //Stmt *parseAssign();
+  //Stmt *parseReturn();
+  //Expr *parseExpr();
+  //Expr *parseTerm();
+  //Expr *parseFactor();
 
 public:
   Parser(Lexer &Lex) : Lex(Lex), HasError(false) {
     advance();
+
+    IntegerType = new TypeDecl(SMLoc(), "int");
   }
 
   bool hasError() { return HasError; }
-  StmtList *parse();
+  TranslationUnitDecl *parse();
 };
 
 #endif

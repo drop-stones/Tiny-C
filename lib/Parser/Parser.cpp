@@ -1,5 +1,80 @@
 #include "tiny-c/Parser/Parser.h"
 
+TranslationUnitDecl *Parser::parse() {
+  TranslationUnitDecl *Res;
+  parseTranslationUnit(Res);
+  expect(tok::eof);
+  return Res;
+}
+
+void Parser::parseTranslationUnit(TranslationUnitDecl *&T) {
+  llvm::outs() << "parseTranslationUnit\n";
+  FuncList Funcs;
+  while (Tok.isNot(tok::eof)) {
+    parseFunc(Funcs);
+  }
+  //T->setFuncs(Funcs);
+  T = new TranslationUnitDecl(SMLoc(), "TransUnit", Funcs);
+}
+
+void Parser::parseFunc(FuncList &Funcs) {
+  //TypeDecl *Ty = new TypeDecl(Tok.getLocation(), Tok.getText());
+  SMLoc Loc = Tok.getLocation();
+  consume(tok::kw_INTEGER);
+  StringRef FuncName = Tok.getText();
+  consume(tok::ident);
+  consume(tok::l_paren);
+
+  // TODO: ParmVarList
+  ParmVarList Parms;
+
+  consume(tok::r_paren);
+  consume(tok::l_curl);
+
+  StmtList Stmts;
+  while (Tok.isNot(tok::r_curl)) {
+    parseStmt(Stmts);
+    consume(tok::semi);
+  }
+  consume(tok::r_curl);
+
+  FuncDecl *Func = new FuncDecl(Loc, FuncName, IntegerType, Parms, Stmts);
+  Funcs.push_back(Func);
+}
+
+void Parser::parseStmt(StmtList &Stmts) {
+  if (Tok.is(tok::kw_INTEGER)) { // DeclStmt
+    TypeDecl *Ty = new TypeDecl(Tok.getLocation(), Tok.getText());
+    consume(tok::kw_INTEGER);
+    VarDecl *Var = new VarDecl(Tok.getLocation(), Tok.getText(), Ty);
+    consume(tok::ident);
+    DeclStmt *Decl = new DeclStmt(Var);
+    Stmts.push_back(Decl);
+    return;
+  } else if (Tok.is(tok::ident) && Lex.peek(1).is(tok::equal)) {  // AssignStmt
+    // TODO
+  } else if (Tok.is(tok::kw_RETURN)) {  // ReturnStmt
+    Expr *E;
+    SMLoc Loc = Tok.getLocation();
+    consume(tok::kw_RETURN);
+    parseExpr(E);
+    ReturnStmt *Ret = new ReturnStmt(E);
+    Stmts.push_back(Ret);
+    return;
+  }
+}
+
+void Parser::parseExpr(Expr *&E) {
+  if (Tok.is(tok::integer_literal)) {
+    SMLoc Loc = Tok.getLocation();
+    llvm::APSInt Val{Tok.getText()};
+    consume(tok::integer_literal);
+    E = new IntegerLiteral(Loc, Val, IntegerType);
+    return;
+  }
+}
+
+/*
 StmtList *Parser::parse() {
   StmtList *Res = parseStatementSequence();
   expect(tok::eof);
@@ -96,3 +171,4 @@ Expr *Parser::parseFactor() {
   }
   return Res;
 }
+*/

@@ -6,6 +6,7 @@
 
 using namespace llvm;
 
+/*
 namespace {
 class ToIRVisitor : public ASTVisitor {
   Module *M;
@@ -98,3 +99,4 @@ std::unique_ptr<llvm::Module> CodeGen::compile(StmtList *Stmts) {
   ToIR.run(Stmts);
   return M;
 }
+*/
