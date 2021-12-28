@@ -81,12 +81,35 @@ CASE('*', tok::star);
 CASE('/', tok::slash);
 CASE(',', tok::comma);
 CASE(';', tok::semi);
-CASE('=', tok::equal);
 CASE('(', tok::l_paren);
 CASE(')', tok::r_paren);
 CASE('{', tok::l_curl);
 CASE('}', tok::r_curl);
 #undef CASE
+      case '=':
+        if (*(CurPtr + 1) == '=')
+          formToken(Result, CurPtr + 2, tok::equalequal);
+        else
+          formToken(Result, CurPtr + 1, tok::equal);
+        break;
+      case '<':
+        if (*(CurPtr + 1) == '=')
+          formToken(Result, CurPtr + 2, tok::lessequal);
+        else
+          formToken(Result, CurPtr + 1, tok::less);
+        break;
+      case '>':
+        if (*(CurPtr + 1) == '=')
+          formToken(Result, CurPtr + 2, tok::greaterequal);
+        else
+          formToken(Result, CurPtr + 1, tok::greater);
+        break;
+      case '!':
+        if (*(CurPtr + 1) == '=')
+          formToken(Result, CurPtr + 2, tok::notequal);
+        else
+          formToken(Result, CurPtr + 1, tok::unknown);
+        break;
       default: formToken(Result, CurPtr + 1, tok::unknown);
     }
   }

@@ -123,6 +123,8 @@ public:
     SK_Decl,
     SK_Assign,
     SK_Return,
+    SK_If,
+    SK_While,
   };
 
 private:
@@ -176,6 +178,41 @@ public:
   }
 };
 
+class IfStmt : public Stmt {
+  Expr *Cond;
+  StmtList ThenBlock;
+  StmtList ElseBlock;
+
+public:
+  IfStmt(Expr *Cond, StmtList ThenBlock, StmtList ElseBlock)
+    : Stmt(SK_If), Cond(Cond), ThenBlock(ThenBlock), ElseBlock(ElseBlock) {}
+  IfStmt(Expr *Cond, StmtList ThenBlock)
+    : IfStmt(Cond, ThenBlock, {}) {}
+  
+  Expr *getCond() { return Cond; }
+  StmtList &getThenBlock() { return ThenBlock; }
+  StmtList &getElseBlock() { return ElseBlock; }
+
+  static bool classof(const Stmt *S) {
+    return S->getKind() == SK_If;
+  }
+};
+
+class WhileStmt : public Stmt {
+  Expr *Cond;
+  StmtList Block;
+
+public:
+  WhileStmt(Expr *Cond, StmtList Block) : Stmt(SK_While), Cond(Cond), Block(Block) {}
+
+  Expr *getCond() { return Cond; }
+  StmtList &getBlock() { return Block; }
+
+  static bool classof(const Stmt *S) {
+    return S->getKind() == SK_While;
+  }
+};
+
 class Operator {
   SMLoc Loc;
   tok::TokenKind Kind;
@@ -190,6 +227,9 @@ public:
 class Expr {
 public:
   enum ExprKind {
+    //EK_Equality,
+    //EK_Relational,
+    //EK_Additive,
     EK_BinaryOp,
     EK_Int,
     EK_DeclRef,
