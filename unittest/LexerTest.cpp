@@ -110,4 +110,63 @@ TEST(LexerTest, localVariableTest) {
   EXPECT_EQ(tok::eof, tok.getKind());
 }
 
+TEST(LexerTest, ifTest) {
+  Lexer Lex("         \
+    if (100 < 200) {  \
+      return 100;     \
+    } else {          \
+      return 200;     \
+    } \
+  ");
+  Lex.run();
+  Token tok;
+
+  tok = Lex.next();
+  EXPECT_EQ("if", tok.getText());
+  EXPECT_EQ(tok::kw_IF, tok.getKind());
+
+  tok = Lex.next();
+  EXPECT_EQ("(", tok.getText());
+  EXPECT_EQ(tok::l_paren, tok.getKind());
+
+  tok = Lex.next(); // 100
+
+  tok = Lex.next();
+  EXPECT_EQ("<", tok.getText());
+  EXPECT_EQ(tok::less, tok.getKind());
+
+  tok = Lex.next(); // 200
+  tok = Lex.next(); // )
+  tok = Lex.next(); // {
+  tok = Lex.next(); // return
+  tok = Lex.next(); // 100;
+  tok = Lex.next(); // ;
+  tok = Lex.next(); // }
+
+  tok = Lex.next(); // else
+  EXPECT_EQ("else", tok.getText());
+  EXPECT_EQ(tok::kw_ELSE, tok.getKind());
+}
+
+TEST(LexerTest, whileTest) {
+  Lexer Lex("           \
+    while (num != 0) {  \
+      num = num - 1;    \
+    }                   \
+  ");
+  Lex.run();
+  Token tok;
+
+  tok = Lex.next();
+  EXPECT_EQ("while", tok.getText());
+  EXPECT_EQ(tok::kw_WHILE, tok.getKind());
+
+  tok = Lex.next(); // (
+  tok = Lex.next(); // num
+
+  tok = Lex.next();
+  EXPECT_EQ("!=", tok.getText());
+  EXPECT_EQ(tok::notequal, tok.getKind());
+}
+
 } // namespace

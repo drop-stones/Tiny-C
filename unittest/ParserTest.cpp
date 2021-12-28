@@ -116,4 +116,78 @@ TEST(ParserTest, varTest) {
   EXPECT_EQ("num", num3->getName());
 }
 
+TEST(ParserTest, ifTest) {
+  Lexer Lex("     \
+    int main() {  \
+      if (1 < 2) {    \
+        return 1; \
+      } else {    \
+        return 0; \
+      }           \
+    }             \
+  ");
+  Lex.run();
+  Parser Parser(Lex);
+  TranslationUnitDecl *TransUnit = Parser.parse();
+  FuncDecl *Func = TransUnit->getFuncs().front();
+
+  IfStmt *If = (IfStmt *)Func->getStmts().front();
+  EXPECT_EQ(Stmt::SK_If, If->getKind());
+
+  BinaryOp *Cond = (BinaryOp *)If->getCond();
+  EXPECT_EQ(Expr::EK_BinaryOp, Cond->getKind());
+  EXPECT_EQ(tok::less, Cond->getOperator().getKind());
+  IntegerLiteral *One = (IntegerLiteral *)Cond->getLeft();
+  EXPECT_EQ(1, One->getVal());
+  IntegerLiteral *Two = (IntegerLiteral *)Cond->getRight();
+  EXPECT_EQ(2, Two->getVal());
+
+  StmtList ThenBlock = If->getThenBlock();
+  ReturnStmt *Ret = (ReturnStmt *)ThenBlock.front();
+  EXPECT_EQ(Stmt::SK_Return, Ret->getKind());
+  IntegerLiteral *RetVal = (IntegerLiteral *)Ret->getRetVal();
+  EXPECT_EQ(1, RetVal->getVal());
+
+  StmtList ElseBlock = If->getElseBlock();
+  Ret = (ReturnStmt *)ElseBlock.front();
+  RetVal = (IntegerLiteral *)Ret->getRetVal();
+  EXPECT_EQ(0, RetVal->getVal());
+}
+
+TEST(ParserTest, whileTest) {
+  Lexer Lex("         \
+    int main() {      \
+      int num;        \
+      num = 0;        \
+      while (1 <= 2) {\
+        num = num + 1;\
+      }               \
+    }                 \
+  ");
+  Lex.run();
+  Parser Parser(Lex);
+  TranslationUnitDecl *TransUnit = Parser.parse();
+  FuncDecl *Func = TransUnit->getFuncs().front();
+
+  WhileStmt *While = (WhileStmt *)Func->getStmts().at(2);
+  EXPECT_EQ(Stmt::SK_While, While->getKind());
+
+  BinaryOp *Cond = (BinaryOp *)(While->getCond());
+  IntegerLiteral *One = (IntegerLiteral *)Cond->getLeft();
+  EXPECT_EQ(1, One->getVal());
+  IntegerLiteral *Two = (IntegerLiteral *)Cond->getRight();
+  EXPECT_EQ(2, Two->getVal());
+
+  AssignStmt *Assign = (AssignStmt *)While->getBlock().front();
+  EXPECT_EQ(Stmt::SK_Assign, Assign->getKind());
+  VarDecl *num = Assign->getVar();
+  EXPECT_EQ("num", num->getName());
+  BinaryOp *Add = (BinaryOp *)Assign->getExpr();
+  EXPECT_EQ(tok::plus, Add->getOperator().getKind());
+  DeclRef *Num = (DeclRef *)Add->getLeft();
+  EXPECT_EQ("num", Num->getDecl()->getName());
+  One = (IntegerLiteral *)Add->getRight();
+  EXPECT_EQ(1, One->getVal());
+}
+
 } // namespace
