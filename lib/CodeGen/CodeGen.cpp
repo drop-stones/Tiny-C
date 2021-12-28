@@ -124,8 +124,6 @@ void CodeGen::compileExpr(Expr *Expr) {
       V = Builder.CreateNSWMul(Left, Right); break;
     case tok::slash:
       V = Builder.CreateSDiv(Left, Right); break;
-<<<<<<< HEAD
-=======
     case tok::equalequal:
       V = Builder.CreateICmpEQ(Left, Right); break;
     case tok::notequal:
@@ -138,7 +136,6 @@ void CodeGen::compileExpr(Expr *Expr) {
       V = Builder.CreateICmpSGT(Left, Right); break;
     case tok::greaterequal:
       V = Builder.CreateICmpSGE(Left, Right); break;
->>>>>>> develop
     }
   } else if (IntegerLiteral *Int = dyn_cast<IntegerLiteral>(Expr)) {
     V = ConstantInt::get(Int32Ty, Int->getVal().getExtValue(), true);
