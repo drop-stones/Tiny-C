@@ -50,7 +50,6 @@ void Parser::parseBlock(StmtList &Stmts, DeclList &Decls) {
   consume(tok::l_curl);
   while (Tok.isNot(tok::r_curl)) {
     parseStmt(Stmts, Decls);
-    consume(tok::semi);
   }
   consume(tok::r_curl);
 }
@@ -61,6 +60,7 @@ void Parser::parseStmt(StmtList &Stmts, DeclList &Decls) {
     consume(tok::kw_INTEGER);
     VarDecl *Var = new VarDecl(Tok.getLocation(), Tok.getText(), Ty);
     consume(tok::ident);
+    consume(tok::semi);
     DeclStmt *Decl = new DeclStmt(Var);
     Stmts.push_back(Decl);
     Decls.push_back(Var);
@@ -72,6 +72,7 @@ void Parser::parseStmt(StmtList &Stmts, DeclList &Decls) {
     consume(tok::equal);
     Expr *E = nullptr;
     parseExpr(E);
+    consume(tok::semi);
     AssignStmt *Assign = new AssignStmt(Var, E);
     Stmts.push_back(Assign);
     return;
@@ -80,6 +81,7 @@ void Parser::parseStmt(StmtList &Stmts, DeclList &Decls) {
     SMLoc Loc = Tok.getLocation();
     consume(tok::kw_RETURN);
     parseExpr(E);
+    consume(tok::semi);
     ReturnStmt *Ret = new ReturnStmt(E);
     Stmts.push_back(Ret);
     return;

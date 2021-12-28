@@ -8,7 +8,7 @@ int main() {
   } else {
     num = 2;
   }
-  while (cond == 1) {
+  while (num <= 100) {
     num = num + 1;
   }
   return num;
