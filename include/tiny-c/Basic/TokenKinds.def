@@ -25,6 +25,10 @@ PUNCTUATOR(slash, "/")
 PUNCTUATOR(comma, ",")
 PUNCTUATOR(semi, ";")
 PUNCTUATOR(equal, "=")
+PUNCTUATOR(less, "<")
+PUNCTUATOR(greater, ">")
+PUNCTUATOR(lessequal, "<=")
+PUNCTUATOR(greaterequal, ">=")
 PUNCTUATOR(l_paren, "(")
 PUNCTUATOR(r_paren, ")")
 PUNCTUATOR(l_curl, "{")
@@ -32,6 +36,9 @@ PUNCTUATOR(r_curl, "}")
 
 KEYWORD(INTEGER, "int")
 KEYWORD(RETURN, "return")
+KEYWORD(IF, "if")
+KEYWORD(ELSE, "else")
+KEYWORD(WHILE, "while")
 
 #undef KEYWORD
 #undef PUNCTUATOR
