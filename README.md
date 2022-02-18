@@ -1,6 +1,6 @@
 # LLVM Frontend for Tiny-C
 
-## Grammer for if- and while-statement
+## Grammer
 
 ```
 translationUnit : (functionDefinition)*;
@@ -21,7 +21,7 @@ expr : relationalExpr (( "==" | "!=" ) relationExpr )*;
 relationalExpr : additiveExpr (( "<" | "<=" | ">" | ">=" ) additiveExpr)*;
 additiveExpr : term (( "+" | "-" ) term)*;
 term : factor (( "*" | "/" ) factor)*;
-factor : number | ident | "(" expr ")";
+factor : number | ident ( "(" ( expr ( "," expr )* )? ")" )? | "(" expr ")";
 ident : ([a-zA-Z])+;
 number : ([0-9])+;
 ```
