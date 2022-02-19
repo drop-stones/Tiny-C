@@ -1,7 +1,36 @@
 # LLVM Frontend for Tiny-C
 
-## Grammer
+## Usage
 
+### Compilation
+```
+$ mkdir build
+$ cd build
+$ cmake -G Ninja .
+$ ninja
+```
+
+### Testing
+
+Run Lexer and Parser tests.
+```
+$ ninja test
+```
+
+## Supported Feature
+
+- Binary Expressions
+  - `+ - * / == !=`
+- if-, while-, return- statements
+- Local variables
+  - Declaration: `int x;`
+  - Assignment statement: `x = 100;`
+- `int` type
+- Function
+  - Declaration: `int add(int a, int b) {...}`
+  - Function Call: `x = add(100, 200);`
+
+### Grammar
 ```
 translationUnit : (functionDefinition)*;
 functionDefinition : type ident "(" (formalParameterList)? ")" block;
@@ -25,3 +54,11 @@ factor : number | ident ( "(" ( expr ( "," expr )* )? ")" )? | "(" expr ")";
 ident : ([a-zA-Z])+;
 number : ([0-9])+;
 ```
+
+## Unsupported Feature
+
+- Scope Analysis
+- Semantic Analysis
+- Types other than `int`
+- Pointer Type
+- Array Type
