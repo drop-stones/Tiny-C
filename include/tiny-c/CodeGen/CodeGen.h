@@ -29,6 +29,7 @@ class CodeGen {
 
   void compileTranslationUnit(TranslationUnitDecl *TransUnit);
   void compileFunc(FuncDecl *Func);
+  void compileFormalParm(ParmVarDecl *Parm, llvm::Argument *Arg);
   void compileVarDecl(VarDecl *Var);
   void compileStmt(Stmt *Stmt);
   void compileExpr(Expr *Expr);

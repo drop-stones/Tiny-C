@@ -29,13 +29,27 @@ void CodeGen::compileTranslationUnit(TranslationUnitDecl *TransUnit) {
 
 void CodeGen::compileFunc(FuncDecl *Func) {
   llvm::Type *RetTy = getLLVMType(Func->getRetTy());
-  FunctionType *FnTy = FunctionType::get(RetTy, {}, false);
+  ParmVarList FormalParms = Func->getParms();
+  llvm::SmallVector<llvm::Type *, 8> ParmTypes;
+  for (auto FP : FormalParms) {
+    llvm::Type *Ty = getLLVMType(FP->getTy());
+    ParmTypes.push_back(Ty);
+  }
+  FunctionType *FnTy = FunctionType::get(RetTy, ParmTypes, false);
   Function *Fn = Function::Create(FnTy, GlobalValue::ExternalLinkage, Func->getName(), Mod);
   CurScope = Fn;
   BasicBlock *BB = BasicBlock::Create(Ctx, "entry", Fn);
 
   Builder.SetInsertPoint(BB);
 
+  // Formal Parameters
+  for (int i = 0; i < FormalParms.size(); i++) {
+    ParmVarDecl *Parm = FormalParms[i];
+    Argument *Arg = Fn->getArg(i);
+    compileFormalParm(Parm, Arg);
+  }
+
+  // Local Variables
   for (auto *Var : Func->getDecls()) {
     compileVarDecl((VarDecl *)Var);
   }
@@ -43,6 +57,12 @@ void CodeGen::compileFunc(FuncDecl *Func) {
   for (auto *Stmt : Func->getStmts()) {
     compileStmt(Stmt);
   }
+}
+
+void CodeGen::compileFormalParm(ParmVarDecl *Parm, Argument *Arg) {
+  llvm::Value *Alloca = Builder.CreateAlloca(getLLVMType(Parm->getTy()));
+  setAlloca(Parm->getName(), Alloca);
+  Builder.CreateStore(Arg, Alloca);
 }
 
 void CodeGen::compileVarDecl(VarDecl *Var) {
@@ -143,5 +163,8 @@ void CodeGen::compileExpr(Expr *Expr) {
     Value *Alloca = getAlloca(Decl->getDecl()->getName());
     Type *Ty = getLLVMType(Decl->getType());
     V = Builder.CreateLoad(Ty, Alloca);
+  } else if (FuncCall *Call = dyn_cast<FuncCall>(Expr)) {
+    // TODO
+    //V = Builder.CreateCall()
   }
 }
