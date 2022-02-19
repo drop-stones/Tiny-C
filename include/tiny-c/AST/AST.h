@@ -106,14 +106,20 @@ public:
   TypeDecl *getTy() { return Ty; }
 };
 
-class ParmVarDecl : public Decl {
-  TypeDecl *Ty;
+//class ParmVarDecl : public Decl {
+//  TypeDecl *Ty;
+//
+//public:
+//  ParmVarDecl(SMLoc Loc, StringRef Name, TypeDecl *Ty)
+//    : Decl(DK_Parm, Loc, Name), Ty(Ty) {}
+//  
+//  TypeDecl *getTy() { return Ty; }
+//};
 
+class ParmVarDecl : public VarDecl {
 public:
   ParmVarDecl(SMLoc Loc, StringRef Name, TypeDecl *Ty)
-    : Decl(DK_Parm, Loc, Name), Ty(Ty) {}
-  
-  TypeDecl *getTy() { return Ty; }
+    : VarDecl(Loc, Name, Ty) {}
 };
 
 
@@ -233,6 +239,7 @@ public:
     EK_BinaryOp,
     EK_Int,
     EK_DeclRef,
+    EK_FuncCall,
   };
 
 private:
@@ -291,6 +298,21 @@ public:
 
   static bool classof(const Expr *E) {
     return E->getKind() == EK_DeclRef;
+  }
+};
+
+class FuncCall : public Expr {
+  FuncDecl *Func;
+  ExprList Actuals;
+
+public:
+  FuncCall(FuncDecl *Func, ExprList Actuals) : Expr(EK_FuncCall, Func->getRetTy()), Func(Func), Actuals(Actuals) {}
+
+  FuncDecl *getFuncDecl() { return Func; }
+  ExprList &getActuals() { return Actuals; }
+
+  static bool classof(const Expr *E) {
+    return E->getKind() == EK_FuncCall;
   }
 };
 

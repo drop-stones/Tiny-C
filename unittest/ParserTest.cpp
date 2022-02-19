@@ -190,4 +190,67 @@ TEST(ParserTest, whileTest) {
   EXPECT_EQ(1, One->getVal());
 }
 
+TEST(ParserTest, FormalArgumentTest) {
+  Lexer Lex("               \
+    int add(int a, int b) { \
+      return a + b;         \
+    }                       \
+  ");
+  Lex.run();
+  Parser Parser(Lex);
+  TranslationUnitDecl *TransUnit = Parser.parse();
+  FuncDecl *Func = TransUnit->getFuncs().front();
+
+  TypeDecl *RetTy = Func->getRetTy();
+  EXPECT_EQ("int", RetTy->getName());
+
+  EXPECT_EQ("add", Func->getName());
+
+  ParmVarDecl *a = Func->getParms()[0];
+  EXPECT_EQ("int", a->getTy()->getName());
+  EXPECT_EQ("a", a->getName());
+
+  ParmVarDecl *b = Func->getParms()[1];
+  EXPECT_EQ("int", b->getTy()->getName());
+  EXPECT_EQ("b", b->getName());
+
+  ReturnStmt *ret = (ReturnStmt *)Func->getStmts()[0];
+  EXPECT_EQ(Stmt::SK_Return, ret->getKind());
+
+  Expr *add = ret->getRetVal();
+  EXPECT_EQ(Expr::EK_BinaryOp, add->getKind());
+}
+
+TEST(ParserTest, FuncCallTest) {
+  Lexer Lex("               \
+    int add(int a, int b) { \
+      return a + b;         \
+    }                       \
+    int main() {            \
+      return add(100, 200); \
+    }                       \
+  ");
+  Lex.run();
+  Parser Parser(Lex);
+  TranslationUnitDecl *TransUnit = Parser.parse();
+  FuncDecl *add = TransUnit->getFuncs()[0];
+
+  ReturnStmt *ret = (ReturnStmt *)add->getStmts()[0];
+  EXPECT_EQ(Stmt::SK_Return, ret->getKind());
+
+  FuncDecl *main = TransUnit->getFuncs()[1];
+
+  ret = (ReturnStmt *)main->getStmts()[0];
+  EXPECT_EQ(Stmt::SK_Return, ret->getKind());
+
+  FuncCall *call = (FuncCall *)ret->getRetVal();
+  EXPECT_EQ(Expr::EK_FuncCall, call->getKind());
+  FuncDecl *callee = call->getFuncDecl();
+  EXPECT_EQ("add", callee->getName());
+  EXPECT_EQ("int", callee->getRetTy()->getName());
+  ExprList Actuals = call->getActuals();
+  EXPECT_EQ(100, ((IntegerLiteral *)Actuals[0])->getVal());
+  EXPECT_EQ(200, ((IntegerLiteral *)Actuals[1])->getVal());
+}
+
 } // namespace
