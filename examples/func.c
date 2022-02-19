@@ -3,7 +3,15 @@ int add(int a, int b) {
 }
 
 int main() {
-  int num;
-  num = 100;
-  return num + 200;
+  int x;
+  int y;
+  x = 100;
+  y = 200;
+  x = add(x, y);
+  if (x == 300) {
+    y = 0;
+  } else {
+    y = 1;
+  }
+  return y;
 }

@@ -57,6 +57,8 @@ void CodeGen::compileFunc(FuncDecl *Func) {
   for (auto *Stmt : Func->getStmts()) {
     compileStmt(Stmt);
   }
+
+  setFunc(Func->getName(), Fn);
 }
 
 void CodeGen::compileFormalParm(ParmVarDecl *Parm, Argument *Arg) {
@@ -156,6 +158,8 @@ void CodeGen::compileExpr(Expr *Expr) {
       V = Builder.CreateICmpSGT(Left, Right); break;
     case tok::greaterequal:
       V = Builder.CreateICmpSGE(Left, Right); break;
+    default:
+      break;
     }
   } else if (IntegerLiteral *Int = dyn_cast<IntegerLiteral>(Expr)) {
     V = ConstantInt::get(Int32Ty, Int->getVal().getExtValue(), true);
@@ -165,6 +169,13 @@ void CodeGen::compileExpr(Expr *Expr) {
     V = Builder.CreateLoad(Ty, Alloca);
   } else if (FuncCall *Call = dyn_cast<FuncCall>(Expr)) {
     // TODO
-    //V = Builder.CreateCall()
+    Function *callee = getFunc(Call->getFuncDecl()->getName());
+    ExprList Actuals = Call->getActuals();
+    llvm::SmallVector <Value *, 8> ActualParms;
+    for (auto AP : Actuals) {
+      compileExpr(AP);
+      ActualParms.push_back(V);
+    }
+    V = Builder.CreateCall(callee, ActualParms);
   }
 }

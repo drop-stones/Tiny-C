@@ -13,12 +13,19 @@ class CodeGen {
   llvm::IRBuilder<> Builder;
   llvm::Value *V;
 
+  llvm::StringMap<llvm::Function *> FuncMap;
   std::unordered_map<llvm::Function *, llvm::StringMap<llvm::Value *>> AllocaMap;
   llvm::Function *CurScope;
 
   llvm::Type *VoidTy;
   llvm::Type *Int32Ty;
 
+  llvm::Function *getFunc(llvm::StringRef Name) {
+    return FuncMap[Name];
+  }
+  void setFunc(llvm::StringRef Name, llvm::Function *Func) {
+    FuncMap[Name] = Func;
+  }
   llvm::Value *getAlloca(llvm::StringRef Name) {
     return AllocaMap[CurScope][Name];
   }
