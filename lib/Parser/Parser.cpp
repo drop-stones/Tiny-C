@@ -28,7 +28,18 @@ void Parser::parseFunc(FuncList &Funcs) {
   CurScope = Func;
 
   consume(tok::l_paren);
-  // TODO: Parms
+  while (Tok.isNot(tok::r_paren)) {
+    TypeDecl *Ty = new TypeDecl(Tok.getLocation(), Tok.getText());
+    consume(tok::kw_INTEGER);
+    ParmVarDecl *Parm = new ParmVarDecl(Tok.getLocation(), Tok.getText(), Ty);
+    consume(tok::ident);    // TODO: Fix segfault
+    setVarDecl(Parm);
+    Parms.push_back(Parm);
+
+    if (Tok.isNot(tok::r_paren)) {
+      consume(tok::comma);
+    }
+  }
   consume(tok::r_paren);
 
   parseBlock(Stmts, Decls);
@@ -44,6 +55,7 @@ void Parser::parseFunc(FuncList &Funcs) {
   Func->setDecls(Decls);
 
   Funcs.push_back(Func);
+  setFuncDecl(Func);
 }
 
 void Parser::parseBlock(StmtList &Stmts, DeclList &Decls) {
@@ -76,6 +88,7 @@ void Parser::parseStmt(StmtList &Stmts, DeclList &Decls) {
     AssignStmt *Assign = new AssignStmt(Var, E);
     Stmts.push_back(Assign);
     return;
+  //} else if (Tok.is(tok::ident) && Lex.peek(1).is(tok::l_paren)) {  // FuncCall?
   } else if (Tok.is(tok::kw_RETURN)) {  // ReturnStmt
     Expr *E;
     SMLoc Loc = Tok.getLocation();
@@ -173,10 +186,29 @@ void Parser::parseFactor(Expr *&E) {
 
   switch (Tok.getKind()) {
   case tok::ident: {
-    VarDecl *Var = getVarDecl(Tok.getText());
-    consume(tok::ident);
-    E = new DeclRef(Var);
-    return;
+    if (Lex.peek(1).is(tok::l_paren)) { // FuncCall
+      // TODO
+      FuncDecl *Func = getFuncDecl(Tok.getText());
+      consume(tok::ident);
+      consume(tok::l_paren);
+      ExprList l;
+      while (Tok.isNot(tok::r_paren)) {
+        Expr *Arg;
+        parseExpr(Arg);
+        l.push_back(Arg);
+        if (Tok.isNot(tok::r_paren)) {
+          consume(tok::comma);
+        }
+      }
+      consume(tok::r_paren);
+      E = new FuncCall(Func, l);
+      return;
+    } else {
+      VarDecl *Var = getVarDecl(Tok.getText());
+      consume(tok::ident);
+      E = new DeclRef(Var);
+      return;
+    }
   }
   case tok::integer_literal: {
     llvm::APSInt Val{Tok.getText()};
