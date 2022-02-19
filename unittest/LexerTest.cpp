@@ -214,4 +214,21 @@ TEST(LexerTest, funcCallTest) {
   tok = Lex.next(); // ;
 }
 
+TEST(LexerTest, CommentTest) {
+  Lexer Lex("           \
+    // this is comment  \n\
+    return 5;           \
+  ");
+  Lex.run();
+  Token tok;
+
+  tok = Lex.next();
+  EXPECT_EQ("return", tok.getText());
+  EXPECT_EQ(tok::kw_RETURN, tok.getKind());
+
+  tok = Lex.next();
+  EXPECT_EQ("5", tok.getText());
+  EXPECT_EQ(tok::integer_literal, tok.getKind());
+}
+
 } // namespace
