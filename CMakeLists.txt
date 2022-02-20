@@ -49,6 +49,7 @@ add_code_coverage()
 add_subdirectory("lib")
 add_subdirectory("tools")
 add_subdirectory("unittest")
+add_subdirectory("test")
 
 enable_testing()
 add_test(NAME LexerTest COMMAND LexerTest)

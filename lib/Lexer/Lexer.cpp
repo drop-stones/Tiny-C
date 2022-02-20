@@ -7,6 +7,10 @@ LLVM_READNONE inline bool isWhitespace(char c) {
          c == '\v' || c == '\r' || c == '\n';
 }
 
+LLVM_READNONE inline bool isNewline(char c) {
+  return c == '\n';
+}
+
 LLVM_READNONE inline bool isDigit(char c) {
   return '0' <= c && c <= '9';
 }
@@ -78,7 +82,7 @@ case ch: formToken(Result, CurPtr + 1, tok); break
 CASE('+', tok::plus);
 CASE('-', tok::minus);
 CASE('*', tok::star);
-CASE('/', tok::slash);
+//CASE('/', tok::slash);
 CASE(',', tok::comma);
 CASE(';', tok::semi);
 CASE('(', tok::l_paren);
@@ -86,6 +90,16 @@ CASE(')', tok::r_paren);
 CASE('{', tok::l_curl);
 CASE('}', tok::r_curl);
 #undef CASE
+      case '/': {
+        if (*(CurPtr + 1) == '/') { // comment out
+          while(*CurPtr && !charinfo::isNewline(*CurPtr)) // skip until '\n'
+            CurPtr++;
+          nextToken(Result);
+        } else {
+          formToken(Result, CurPtr + 1, tok::slash);
+        }
+        break;
+      }
       case '=':
         if (*(CurPtr + 1) == '=')
           formToken(Result, CurPtr + 2, tok::equalequal);
