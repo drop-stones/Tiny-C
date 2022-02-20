@@ -139,7 +139,7 @@ TEST(LexerTest, ifTest) {
   tok = Lex.next(); // )
   tok = Lex.next(); // {
   tok = Lex.next(); // return
-  tok = Lex.next(); // 100;
+  tok = Lex.next(); // 100
   tok = Lex.next(); // ;
   tok = Lex.next(); // }
 
@@ -167,6 +167,68 @@ TEST(LexerTest, whileTest) {
   tok = Lex.next();
   EXPECT_EQ("!=", tok.getText());
   EXPECT_EQ(tok::notequal, tok.getKind());
+}
+
+TEST(LexerTest, funcCallTest) {
+  Lexer Lex("             \
+    int sum;              \
+    sum = add(100, 200);  \
+    return sum;           \
+  ");
+  Lex.run();
+  Token tok;
+
+  tok = Lex.next();
+  EXPECT_EQ("int", tok.getText());
+  EXPECT_EQ(tok::kw_INTEGER, tok.getKind());
+
+  tok = Lex.next(); // sum
+  tok = Lex.next(); // ;
+  tok = Lex.next(); // sum
+  tok = Lex.next(); // =
+
+  tok = Lex.next(); // add
+  EXPECT_EQ("add", tok.getText());
+  EXPECT_EQ(tok::ident, tok.getKind());
+
+  tok = Lex.next(); // (
+  EXPECT_EQ("(", tok.getText());
+  EXPECT_EQ(tok::l_paren, tok.getKind());
+
+  tok = Lex.next(); // 100
+  EXPECT_EQ("100", tok.getText());
+  EXPECT_EQ(tok::integer_literal, tok.getKind());
+
+  tok = Lex.next(); // ,
+  EXPECT_EQ(",", tok.getText());
+  EXPECT_EQ(tok::comma, tok.getKind());
+
+  tok = Lex.next(); // 200
+  EXPECT_EQ("200", tok.getText());
+  EXPECT_EQ(tok::integer_literal, tok.getKind());
+
+  tok = Lex.next(); // )
+  EXPECT_EQ(")", tok.getText());
+  EXPECT_EQ(tok::r_paren, tok.getKind());
+
+  tok = Lex.next(); // ;
+}
+
+TEST(LexerTest, CommentTest) {
+  Lexer Lex("           \
+    // this is comment  \n\
+    return 5;           \
+  ");
+  Lex.run();
+  Token tok;
+
+  tok = Lex.next();
+  EXPECT_EQ("return", tok.getText());
+  EXPECT_EQ(tok::kw_RETURN, tok.getKind());
+
+  tok = Lex.next();
+  EXPECT_EQ("5", tok.getText());
+  EXPECT_EQ(tok::integer_literal, tok.getKind());
 }
 
 } // namespace

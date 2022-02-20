@@ -5,6 +5,9 @@ project("Tiny-C"
   # LANGUAGES CXX
 )
 
+set(CMAKE_C_COMPILER "/usr/local/bin/clang")
+set(CMAKE_CXX_COMPILER "/usr/local/bin/clang++")
+
 # enable clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -39,9 +42,14 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+# CodeCoverage
+include(CodeCoverage)
+add_code_coverage()
+
 add_subdirectory("lib")
 add_subdirectory("tools")
 add_subdirectory("unittest")
+add_subdirectory("test")
 
 enable_testing()
 add_test(NAME LexerTest COMMAND LexerTest)

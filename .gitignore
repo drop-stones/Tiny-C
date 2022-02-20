@@ -1,3 +1,4 @@
 build/
 examples/*.ll
+test/*.ll
 .cache/

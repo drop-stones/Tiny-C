@@ -14,8 +14,17 @@ private:
 
   TypeDecl *IntegerType;
 
+  llvm::StringMap<FuncDecl *> FuncMap;
   std::unordered_map<Decl *, llvm::StringMap<VarDecl *>> DeclMap;
   Decl *CurScope;
+
+  void setFuncDecl(FuncDecl *F) {
+    FuncMap[F->getName()] = F;
+  }
+
+  FuncDecl *getFuncDecl(llvm::StringRef Name) {
+    return FuncMap[Name];
+  }
 
   void setVarDecl(VarDecl *D) {
     DeclMap[CurScope][D->getName()] = D;
